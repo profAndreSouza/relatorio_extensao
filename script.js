@@ -534,8 +534,32 @@ function generatePDF() {
 elements.btnGenerate.addEventListener('click', generatePDF);
 elements.btnPrintPreview.addEventListener('click', generatePDF);
 
+// Tutorial toggle logic
+const setupTutorialToggle = () => {
+  const toggle = document.getElementById('tutorial-toggle');
+  const content = document.getElementById('tutorial-content');
+  const chevron = document.getElementById('tutorial-chevron');
+  const card = document.getElementById('tutorial-card');
+
+  if (toggle && content && chevron && card) {
+    toggle.addEventListener('click', () => {
+      const isOpen = card.classList.contains('open');
+      if (isOpen) {
+        content.style.maxHeight = '0px';
+        chevron.style.transform = 'rotate(0deg)';
+        card.classList.remove('open');
+      } else {
+        content.style.maxHeight = '500px';
+        chevron.style.transform = 'rotate(180deg)';
+        card.classList.add('open');
+      }
+    });
+  }
+};
+
 // Page Setup initialization
 window.addEventListener('DOMContentLoaded', () => {
   loadFromLocalStorage();
+  setupTutorialToggle();
   lucide.createIcons();
 });

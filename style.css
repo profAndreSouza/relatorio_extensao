@@ -889,3 +889,75 @@ textarea {
   box-shadow: none !important;
   border: none !important;
 }
+
+/* Tutorial Accordion Styling */
+.tutorial-card {
+  border-left: 4px solid var(--primary) !important;
+  background-color: #f0f7ff !important;
+}
+
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tutorial-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tutorial-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.tutorial-step .step-num {
+  background-color: var(--primary);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tutorial-step p {
+  font-size: 0.8rem;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.tutorial-step p strong {
+  color: var(--text-main);
+}
+
+.tutorial-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #fff;
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.tutorial-link a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tutorial-link a:hover {
+  text-decoration: underline;
+}
