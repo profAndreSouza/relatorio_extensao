@@ -55,11 +55,20 @@
             </div>
             <div class="input-group">
               <label for="student-course">Curso</label>
-              <input type="text" id="student-course" placeholder="Ex: Engenharia de Software">
+              <select id="student-course">
+                <option value="" disabled selected>Selecione o curso</option>
+                <option value="Análise e Desenvolvimento de Sistemas">Análise e Desenvolvimento de Sistemas</option>
+                <option value="Mecatrônica Industrial">Mecatrônica Industrial</option>
+              </select>
             </div>
             <div class="input-group">
               <label for="student-semester">Semestre / Fase</label>
-              <input type="text" id="student-semester" placeholder="Ex: 3º Semestre">
+              <select id="student-semester">
+                <option value="" disabled selected>Selecione o semestre</option>
+                <option value="1º Semestre">1º Semestre</option>
+                <option value="3º Semestre">3º Semestre</option>
+                <option value="5º Semestre">5º Semestre</option>
+              </select>
             </div>
           </div>
         </section>
@@ -73,11 +82,11 @@
           <div class="form-grid">
             <div class="input-group full-width">
               <label for="project-name">Nome do Projeto de Extensão</label>
-              <input type="text" id="project-name" placeholder="Ex: Inclusão Digital para Terceira Idade">
+              <input type="text" id="project-name" placeholder="Ex: Amor Inclusivo">
             </div>
             <div class="input-group full-width">
               <label for="project-advisor">Professor Orientador</label>
-              <input type="text" id="project-advisor" placeholder="Ex: Prof. Dr. André Souza">
+              <input type="text" id="project-advisor" placeholder="Ex: Prof. Dra. Ariane Diniz Silva">
             </div>
           </div>
         </section>

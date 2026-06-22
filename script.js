@@ -407,7 +407,7 @@ elements.studentName.addEventListener('input', (e) => {
   saveToLocalStorage();
 });
 
-elements.studentCourse.addEventListener('input', (e) => {
+elements.studentCourse.addEventListener('change', (e) => {
   state.student.course = e.target.value;
   updateUI();
   saveToLocalStorage();
