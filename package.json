@@ -1,0 +1,13 @@
+{
+  "name": "relatorio-extensao-unisenai",
+  "version": "1.0.0",
+  "description": "Gerador de Relatório de Extensão para alunos da UniSENAI",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0"
+  }
+}

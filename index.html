@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Relatório de Extensão - UniSENAI</title>
+
+  <!-- Google Fonts - Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- html2pdf.js CDN para geração direta de PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+
+  <!-- App Wrapper -->
+  <div class="app-container">
+
+    <!-- Left Panel: Form Editor -->
+    <aside class="editor-panel no-print">
+      <header class="editor-header">
+        <div class="logo-container">
+          <img src="logo_unisenai.png" alt="UniSENAI Logo" class="editor-logo">
+        </div>
+        <div class="title-container">
+          <h1>Relatório de Extensão</h1>
+          <p>Preencha os dados e gere o relatório oficial formatado.</p>
+        </div>
+      </header>
+
+      <main class="editor-body">
+
+        <!-- Form Section: Student Details -->
+        <section class="form-section card">
+          <div class="section-title">
+            <i data-lucide="user"></i>
+            <h2>Identificação do Estudante</h2>
+          </div>
+          <div class="form-grid">
+            <div class="input-group full-width">
+              <label for="student-name">Nome Completo</label>
+              <input type="text" id="student-name" placeholder="Ex: João Silva Santos" autocomplete="name">
+            </div>
+            <div class="input-group">
+              <label for="student-course">Curso</label>
+              <input type="text" id="student-course" placeholder="Ex: Engenharia de Software">
+            </div>
+            <div class="input-group">
+              <label for="student-semester">Semestre / Fase</label>
+              <input type="text" id="student-semester" placeholder="Ex: 3º Semestre">
+            </div>
+          </div>
+        </section>
+
+        <!-- Form Section: Project Details -->
+        <section class="form-section card">
+          <div class="section-title">
+            <i data-lucide="book-open"></i>
+            <h2>Dados do Projeto de Extensão</h2>
+          </div>
+          <div class="form-grid">
+            <div class="input-group full-width">
+              <label for="project-name">Nome do Projeto de Extensão</label>
+              <input type="text" id="project-name" placeholder="Ex: Inclusão Digital para Terceira Idade">
+            </div>
+            <div class="input-group full-width">
+              <label for="project-advisor">Professor Orientador</label>
+              <input type="text" id="project-advisor" placeholder="Ex: Prof. Dr. André Souza">
+            </div>
+          </div>
+        </section>
+
+        <!-- Form Section: Activities -->
+        <section class="form-section card">
+          <div class="section-title header-action">
+            <div class="title-with-icon">
+              <i data-lucide="calendar"></i>
+              <h2>Atividades Realizadas</h2>
+            </div>
+            <span class="hours-badge">
+              Total: <strong id="hours-total-badge">0h</strong>
+            </span>
+          </div>
+
+          <div id="activities-container" class="activities-list">
+            <!-- Activities cards will be injected dynamically -->
+          </div>
+
+          <button type="button" id="btn-add-activity" class="btn btn-secondary full-width">
+            <i data-lucide="plus-circle"></i>
+            Adicionar Atividade
+          </button>
+        </section>
+
+        <!-- Action Panel -->
+        <div class="actions-panel">
+          <button type="button" id="btn-clear" class="btn btn-danger-outline">
+            <i data-lucide="trash-2"></i>
+            Limpar Tudo
+          </button>
+          <button type="button" id="btn-generate" class="btn btn-primary">
+            <i data-lucide="file-text"></i>
+            Gerar Relatório (PDF)
+          </button>
+        </div>
+
+      </main>
+
+      <footer class="editor-footer">
+        <p>Desenvolvido para alunos da UniSENAI • Seus dados são salvos localmente de forma automática.</p>
+      </footer>
+    </aside>
+
+    <!-- Right Panel: Live PDF/A4 Preview -->
+    <section class="preview-panel">
+      <div class="preview-toolbar no-print">
+        <span class="toolbar-title"><i data-lucide="eye"></i> Pré-visualização do Relatório Oficial</span>
+        <button type="button" id="btn-print-preview" class="btn btn-sm btn-primary">
+          <i data-lucide="printer"></i> Imprimir / Salvar PDF
+        </button>
+      </div>
+
+      <div class="a4-page-container">
+        <!-- Actual printable page -->
+        <div class="a4-page" id="report-sheet">
+
+          <!-- Report Header -->
+          <header class="report-header">
+            <div class="report-header-left">
+              <img src="logo_unisenai.png" alt="UniSENAI Logo" class="report-logo">
+            </div>
+            <div class="report-header-right">
+              <span class="inst-name">CAMPUS SOROCABA</span>
+              <span class="doc-title">RELATÓRIO DE ATIVIDADES DE EXTENSÃO</span>
+            </div>
+          </header>
+
+          <hr class="report-divider">
+
+          <!-- Section 1: Identification -->
+          <section class="report-section">
+            <h3 class="report-section-title">1. IDENTIFICAÇÃO</h3>
+            <table class="report-table info-table">
+              <tr>
+                <td class="w-20 font-bold">Estudante:</td>
+                <td id="preview-student-name" class="w-80">--</td>
+              </tr>
+
+              <tr>
+                <td class="font-bold">Curso:</td>
+                <td id="preview-student-course">--</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Semestre/Fase:</td>
+                <td id="preview-student-semester">--</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Projeto de Extensão:</td>
+                <td id="preview-project-name" class="font-bold text-primary">--</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Orientador:</td>
+                <td id="preview-project-advisor">--</td>
+              </tr>
+            </table>
+          </section>
+
+          <!-- Section 2: Activities Log -->
+          <section class="report-section">
+            <h3 class="report-section-title">2. ATIVIDADES REALIZADAS</h3>
+            <table class="report-table activities-table" id="preview-activities-table">
+              <thead>
+                <tr>
+                  <th class="w-15">Data</th>
+                  <th class="w-70">Descrição Detalhada das Atividades</th>
+                  <th class="w-15 text-center">Horas</th>
+                </tr>
+              </thead>
+              <tbody id="preview-activities-body">
+                <!-- Injected dynamically -->
+                <tr class="empty-row">
+                  <td colspan="3" class="text-center text-muted">Nenhuma atividade cadastrada.</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2" class="text-right font-bold">Total de Horas Realizadas:</td>
+                  <td id="preview-total-hours" class="text-center font-bold">0h</td>
+                </tr>
+              </tfoot>
+            </table>
+          </section>
+
+          <!-- Section 3: Evidence (Images) -->
+          <section class="report-section page-break-before" id="preview-evidence-section">
+            <h3 class="report-section-title">3. REGISTRO FOTOGRÁFICO (EVIDÊNCIAS)</h3>
+            <div class="evidence-grid" id="preview-evidence-grid">
+              <!-- Evidence photos with labels injected here -->
+              <p class="text-muted empty-evidence text-center w-100">Nenhuma imagem anexada às atividades.</p>
+            </div>
+          </section>
+
+          <!-- Section 4: Signatures -->
+          <footer class="report-signatures-section">
+            <div class="signature-block">
+              <div class="signature-line"></div>
+              <span id="preview-signature-student-name">Assinatura do Estudante</span>
+              <span class="signature-role">Estudante</span>
+            </div>
+            <div class="signature-block">
+              <div class="signature-line"></div>
+              <span id="preview-signature-advisor-name">Assinatura do Orientador</span>
+              <span class="signature-role">Professor Orientador / Coordenação</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- JavaScript -->
+  <script type="module" src="script.js"></script>
+</body>
+
+</html>
