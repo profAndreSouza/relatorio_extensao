@@ -729,10 +729,15 @@ function setupAuditPanel() {
 
   // Open Modal
   auditElements.btnOpen.addEventListener('click', () => {
-    loadAuditHistory();
-    renderAuditTable();
-    auditElements.modal.style.display = 'flex';
-    auditElements.detailsPanel.style.display = 'none';
+    const token = prompt("Digite a chave de segurança para acessar o Painel de Auditoria:");
+    if (token === "AUDIT_SENAI_2026") {
+      loadAuditHistory();
+      renderAuditTable();
+      auditElements.modal.style.display = 'flex';
+      auditElements.detailsPanel.style.display = 'none';
+    } else if (token !== null) {
+      alert("Acesso negado. Chave de segurança incorreta.");
+    }
   });
 
   // Close Modal
