@@ -3,6 +3,14 @@ import fs from 'fs';
 import path from 'path';
 
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(process.cwd(), 'index.html'),
+        auditoria: path.resolve(process.cwd(), 'auditoria.html')
+      }
+    }
+  },
   plugins: [
     {
       name: 'audit-api',

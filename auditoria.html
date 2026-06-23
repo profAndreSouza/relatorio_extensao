@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Auditoria - UniSENAI</title>
+
+  <!-- Google Fonts - Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Reuse existing style.css tokens/basics -->
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* Specific styles for auditoria page layout */
+    .audit-page-body {
+      background-color: var(--bg-editor);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      width: 100vw;
+      padding: 24px;
+    }
+
+    .login-card {
+      background: var(--bg-card);
+      width: 100%;
+      max-width: 420px;
+      padding: 32px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+      text-align: center;
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .login-logo {
+      height: 48px;
+      margin-bottom: 20px;
+    }
+
+    .login-card h1 {
+      font-family: var(--font-title);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .login-card p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .login-input-group {
+      text-align: left;
+    }
+
+    .login-input-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .login-input-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: var(--font-family);
+      font-size: 0.9rem;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .login-input-group input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .btn-login {
+      background-color: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .btn-login:hover {
+      background-color: var(--primary-hover);
+    }
+
+    /* Dashboard Layout */
+    .dashboard-container {
+      background: var(--bg-card);
+      width: 100%;
+      max-width: 1000px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .dashboard-header {
+      padding: 24px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dashboard-logo-title {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .dashboard-logo {
+      height: 40px;
+    }
+
+    .dashboard-title h2 {
+      font-family: var(--font-title);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+
+    .dashboard-title p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .dashboard-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .dashboard-footer {
+      padding: 16px 24px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body class="audit-page-body">
+
+  <!-- 1. Password Verification Card -->
+  <div id="login-container" class="login-card">
+    <img src="logo_unisenai.png" alt="UniSENAI Logo" class="login-logo">
+    <h1>Acesso Restrito</h1>
+    <p>Digite a chave de segurança administrativa para visualizar os logs de auditoria.</p>
+    
+    <form id="login-form" class="login-form" onsubmit="return false;">
+      <div class="login-input-group">
+        <label for="password-input">Chave de Segurança</label>
+        <input type="password" id="password-input" placeholder="••••••••••••" autofocus required>
+      </div>
+      <button type="submit" id="btn-login-submit" class="btn-login">
+        <i data-lucide="lock"></i>
+        Autenticar Acesso
+      </button>
+    </form>
+  </div>
+
+  <!-- 2. Secure Dashboard Container -->
+  <div id="dashboard-container" class="dashboard-container" style="display: none;">
+    <header class="dashboard-header">
+      <div class="dashboard-logo-title">
+        <img src="logo_unisenai.png" alt="UniSENAI Logo" class="dashboard-logo">
+        <div class="dashboard-title">
+          <h2>Painel de Auditoria & Logs</h2>
+          <p>Relatórios oficiais gerados (sem fotos anexadas)</p>
+        </div>
+      </div>
+      <button type="button" id="btn-logout" class="btn btn-sm btn-danger-outline" style="padding: 6px 12px; font-size: 0.75rem;">
+        <i data-lucide="log-out"></i> Sair
+      </button>
+    </header>
+
+    <main class="dashboard-body">
+      <!-- Controls -->
+      <div class="modal-controls">
+        <div class="search-box">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" id="audit-search" placeholder="Buscar por aluno, curso ou projeto...">
+        </div>
+        
+        <div class="export-actions">
+          <button type="button" id="btn-export-json" class="btn btn-sm btn-secondary" title="Exportar dump JSON de auditoria">
+            <i data-lucide="file-json"></i>
+            Exportar Logs (JSON)
+          </button>
+          <button type="button" id="btn-export-sqlite" class="btn btn-sm btn-primary" title="Gerar e baixar banco SQLite (.db)">
+            <i data-lucide="database"></i>
+            Exportar SQLite (.db)
+          </button>
+        </div>
+      </div>
+
+      <!-- History Table -->
+      <div class="modal-table-container" style="max-height: 350px;">
+        <table class="audit-table">
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Estudante</th>
+              <th>Curso</th>
+              <th>Projeto</th>
+              <th class="text-center">Horas</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="audit-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Details Panel (shown when details button clicked) -->
+      <div id="audit-details-panel" class="details-panel" style="display: none;">
+        <div class="details-header">
+          <h3>Detalhes do Relatório</h3>
+          <button type="button" id="btn-details-close" class="btn-close-details">&times;</button>
+        </div>
+        <div id="audit-details-content" class="details-content">
+          <!-- Details loaded here -->
+        </div>
+      </div>
+    </main>
+
+    <footer class="dashboard-footer">
+      <div class="audit-stats">
+        Total: <strong id="audit-stat-count">0</strong> relatórios | <strong id="audit-stat-hours">0h</strong> auditadas
+      </div>
+      <button type="button" id="btn-audit-clear" class="btn btn-sm btn-danger-outline">
+        <i data-lucide="trash-2"></i>
+        Limpar Histórico Local
+      </button>
+    </footer>
+  </div>
+
+  <!-- SQL.js dynamically loaded for client-side SQLite generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+
+  <!-- Custom script for Audit Page -->
+  <script type="module" src="auditoria.js"></script>
+</body>
+</html>
