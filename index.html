@@ -153,6 +153,12 @@
           </button>
         </section>
 
+        <!-- Audit Panel Trigger -->
+        <button type="button" id="btn-audit-open" class="btn btn-secondary-outline full-width" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <i data-lucide="shield-check"></i>
+          Painel de Auditoria & Logs
+        </button>
+
         <!-- Action Panel -->
         <div class="actions-panel">
           <button type="button" id="btn-clear" class="btn btn-danger-outline">
@@ -280,6 +286,88 @@
     </section>
 
   </div>
+
+  <!-- Audit Modal Panel -->
+  <div id="audit-modal" class="modal-overlay no-print" style="display: none;">
+    <div class="modal-card">
+      <header class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="shield" class="text-primary modal-icon-shield"></i>
+          <div>
+            <h2>Painel de Auditoria & Logs</h2>
+            <p>Histórico de relatórios gerados (sem fotos)</p>
+          </div>
+        </div>
+        <button type="button" id="btn-audit-close" class="btn-close-modal" title="Fechar Painel">
+          <i data-lucide="x"></i>
+        </button>
+      </header>
+
+      <main class="modal-body">
+        <!-- Controls -->
+        <div class="modal-controls">
+          <div class="search-box">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="audit-search" placeholder="Buscar por aluno, curso ou projeto...">
+          </div>
+          
+          <div class="export-actions">
+            <button type="button" id="btn-export-json" class="btn btn-sm btn-secondary" title="Exportar dump JSON de auditoria">
+              <i data-lucide="file-json"></i>
+              Logs (JSON)
+            </button>
+            <button type="button" id="btn-export-sqlite" class="btn btn-sm btn-primary" title="Gerar e baixar banco SQLite (.db)">
+              <i data-lucide="database"></i>
+              SQLite (.db)
+            </button>
+          </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="modal-table-container">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Estudante</th>
+                <th>Curso</th>
+                <th>Projeto</th>
+                <th class="text-center">Horas</th>
+                <th class="text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="audit-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Details Panel (shown when details button clicked) -->
+        <div id="audit-details-panel" class="details-panel" style="display: none;">
+          <div class="details-header">
+            <h3>Detalhes do Relatório</h3>
+            <button type="button" id="btn-details-close" class="btn-close-details">&times;</button>
+          </div>
+          <div id="audit-details-content" class="details-content">
+            <!-- Details loaded here -->
+          </div>
+        </div>
+      </main>
+
+      <footer class="modal-footer">
+        <div class="audit-stats">
+          Total: <strong id="audit-stat-count">0</strong> relatórios | <strong id="audit-stat-hours">0h</strong> auditadas
+        </div>
+        <button type="button" id="btn-audit-clear" class="btn btn-sm btn-danger-outline">
+          <i data-lucide="trash-2"></i>
+          Limpar Tudo
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- SQL.js dynamically loaded for client-side SQLite generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 
   <!-- JavaScript -->
   <script type="module" src="script.js"></script>

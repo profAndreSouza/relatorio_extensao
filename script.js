@@ -465,6 +465,9 @@ elements.btnClear.addEventListener('click', () => {
 
 // PDF Generation using html2pdf
 function generatePDF() {
+  // Save record to audit log
+  saveAuditRecord();
+
   const element = document.getElementById('report-sheet');
   const studentCleanName = (state.student.name || "aluno").trim().toLowerCase().replace(/\s+/g, '_');
   
@@ -534,6 +537,346 @@ function generatePDF() {
 elements.btnGenerate.addEventListener('click', generatePDF);
 elements.btnPrintPreview.addEventListener('click', generatePDF);
 
+/* ==========================================================================
+   AUDIT LOGS & SQLITE EXPORT ENGINE
+   ========================================================================== */
+let auditHistory = [];
+
+const auditElements = {
+  btnOpen: document.getElementById('btn-audit-open'),
+  btnClose: document.getElementById('btn-audit-close'),
+  modal: document.getElementById('audit-modal'),
+  search: document.getElementById('audit-search'),
+  tableBody: document.getElementById('audit-table-body'),
+  statCount: document.getElementById('audit-stat-count'),
+  statHours: document.getElementById('audit-stat-hours'),
+  btnClear: document.getElementById('btn-audit-clear'),
+  btnExportJson: document.getElementById('btn-export-json'),
+  btnExportSqlite: document.getElementById('btn-export-sqlite'),
+  detailsPanel: document.getElementById('audit-details-panel'),
+  detailsContent: document.getElementById('audit-details-content'),
+  detailsClose: document.getElementById('btn-details-close')
+};
+
+function saveAuditHistory() {
+  localStorage.setItem('unisenai_extension_audit_history', JSON.stringify(auditHistory));
+}
+
+function loadAuditHistory() {
+  const saved = localStorage.getItem('unisenai_extension_audit_history');
+  if (saved) {
+    try {
+      auditHistory = JSON.parse(saved);
+    } catch (e) {
+      console.error("Erro ao carregar histórico de auditoria:", e);
+      auditHistory = [];
+    }
+  }
+}
+
+function saveAuditRecord() {
+  // Don't log if there is no student name and no activities configured
+  if (!state.student.name && state.activities.length === 0) return;
+
+  let totalHours = 0;
+  state.activities.forEach(act => {
+    totalHours += parseFloat(act.hours) || 0;
+  });
+
+  const auditRecord = {
+    id: 'audit_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+    timestamp: new Date().toISOString(),
+    student: {
+      name: state.student.name || "",
+      course: state.student.course || "",
+      semester: state.student.semester || ""
+    },
+    project: {
+      name: state.project.name || "",
+      advisor: state.project.advisor || ""
+    },
+    totalHours: totalHours,
+    activities: state.activities.map(act => ({
+      date: act.date || "",
+      hours: parseFloat(act.hours) || 0,
+      description: act.description || ""
+    }))
+  };
+
+  // 1. Save locally in user history
+  auditHistory.push(auditRecord);
+  saveAuditHistory();
+
+  // 2. Save on backend if running locally
+  fetch('/api/audit', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(auditRecord)
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("Auditoria gravada no servidor:", data);
+  })
+  .catch(err => {
+    console.warn("Servidor de auditoria local offline (salvo localmente no navegador):", err);
+  });
+}
+
+function renderAuditTable(query = '') {
+  const tbody = auditElements.tableBody;
+  tbody.innerHTML = '';
+
+  const cleanQuery = query.toLowerCase().trim();
+  const filtered = auditHistory.filter(record => {
+    return (record.student.name || '').toLowerCase().includes(cleanQuery) ||
+           (record.student.course || '').toLowerCase().includes(cleanQuery) ||
+           (record.project.name || '').toLowerCase().includes(cleanQuery);
+  });
+
+  // Sort by timestamp descending
+  filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  let totalHoursAccumulated = 0;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center text-muted" style="padding: 24px;">Nenhum relatório gerado no histórico.</td>
+      </tr>
+    `;
+  } else {
+    filtered.forEach(record => {
+      totalHoursAccumulated += parseFloat(record.totalHours) || 0;
+      const dateObj = new Date(record.timestamp);
+      const formattedDate = dateObj.toLocaleDateString('pt-BR') + ' ' + dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${formattedDate}</td>
+        <td class="font-bold">${record.student.name || 'Sem nome'}</td>
+        <td>${record.student.course || '--'}</td>
+        <td>${record.project.name || '--'}</td>
+        <td class="text-center font-bold text-primary">${record.totalHours}h</td>
+        <td class="text-center">
+          <button class="btn-details-view" data-id="${record.id}">
+            <i data-lucide="eye"></i> Ver
+          </button>
+        </td>
+      `;
+      
+      tr.querySelector('.btn-details-view').addEventListener('click', () => {
+        showAuditDetails(record);
+      });
+      
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Update statistics indicators
+  auditElements.statCount.textContent = filtered.length;
+  auditElements.statHours.textContent = `${totalHoursAccumulated}h`;
+  
+  lucide.createIcons();
+}
+
+function showAuditDetails(record) {
+  const container = auditElements.detailsContent;
+  const dateObj = new Date(record.timestamp);
+  const formattedDate = dateObj.toLocaleDateString('pt-BR') + ' ' + dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  
+  let activitiesHTML = '';
+  if (!record.activities || record.activities.length === 0) {
+    activitiesHTML = '<div class="text-muted text-center py-2">Nenhuma atividade registrada neste relatório.</div>';
+  } else {
+    record.activities.forEach((act, idx) => {
+      activitiesHTML += `
+        <div class="details-activity-item">
+          <div class="details-activity-head">
+            <span>Atividade #${idx + 1} - ${formatDateBR(act.date)}</span>
+            <span class="font-bold text-primary">${act.hours}h</span>
+          </div>
+          <div class="details-activity-desc">${act.description || 'Sem descrição.'}</div>
+        </div>
+      `;
+    });
+  }
+
+  container.innerHTML = `
+    <div class="details-meta-grid">
+      <div class="details-meta-item"><strong>Estudante:</strong> ${record.student.name || '--'}</div>
+      <div class="details-meta-item"><strong>Curso:</strong> ${record.student.course || '--'} (${record.student.semester || '--'})</div>
+      <div class="details-meta-item"><strong>Projeto:</strong> ${record.project.name || '--'}</div>
+      <div class="details-meta-item"><strong>Orientador:</strong> ${record.project.advisor || '--'}</div>
+      <div class="details-meta-item"><strong>Data Geração:</strong> ${formattedDate}</div>
+      <div class="details-meta-item"><strong>Total Horas:</strong> <span class="font-bold text-primary">${record.totalHours}h</span></div>
+    </div>
+    <div style="margin-top: 12px;">
+      <h4 style="margin-bottom: 8px; font-weight:600; color:var(--text-main); font-size:0.8rem;">Atividades Relacionadas:</h4>
+      <div class="details-activities-list">
+        ${activitiesHTML}
+      </div>
+    </div>
+  `;
+
+  auditElements.detailsPanel.style.display = 'block';
+  auditElements.detailsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function setupAuditPanel() {
+  if (!auditElements.btnOpen) return;
+
+  // Open Modal
+  auditElements.btnOpen.addEventListener('click', () => {
+    loadAuditHistory();
+    renderAuditTable();
+    auditElements.modal.style.display = 'flex';
+    auditElements.detailsPanel.style.display = 'none';
+  });
+
+  // Close Modal
+  auditElements.btnClose.addEventListener('click', () => {
+    auditElements.modal.style.display = 'none';
+  });
+
+  // Search / Filter
+  auditElements.search.addEventListener('input', () => {
+    renderAuditTable(auditElements.search.value);
+  });
+
+  // Clear History
+  auditElements.btnClear.addEventListener('click', () => {
+    if (confirm("Tem certeza que deseja apagar TODO o histórico de auditoria local? Esta ação não pode ser desfeita.")) {
+      auditHistory = [];
+      saveAuditHistory();
+      renderAuditTable();
+      auditElements.detailsPanel.style.display = 'none';
+    }
+  });
+
+  // Details Close
+  auditElements.detailsClose.addEventListener('click', () => {
+    auditElements.detailsPanel.style.display = 'none';
+  });
+
+  // Export JSON
+  auditElements.btnExportJson.addEventListener('click', () => {
+    if (auditHistory.length === 0) {
+      alert("Não há registros no histórico para exportar.");
+      return;
+    }
+    const jsonStr = JSON.stringify(auditHistory, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `logs_auditoria_unisenai_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // Export SQLite
+  auditElements.btnExportSqlite.addEventListener('click', async () => {
+    if (auditHistory.length === 0) {
+      alert("Não há registros no histórico para exportar.");
+      return;
+    }
+
+    const originalHTML = auditElements.btnExportSqlite.innerHTML;
+    auditElements.btnExportSqlite.disabled = true;
+    auditElements.btnExportSqlite.innerHTML = `<i data-lucide="loader" class="animate-spin" style="width: 12px; height: 12px;"></i> Processando...`;
+    lucide.createIcons();
+
+    try {
+      if (typeof initSqlJs === 'undefined') {
+        throw new Error("A biblioteca SQL.js não pôde ser carregada remotamente. Verifique sua conexão com a Internet.");
+      }
+      
+      const SQL = await initSqlJs({
+        locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+      });
+
+      const db = new SQL.Database();
+      
+      // Create schema
+      db.run(`
+        CREATE TABLE IF NOT EXISTS relatorios (
+          id TEXT PRIMARY KEY,
+          timestamp TEXT,
+          estudante_nome TEXT,
+          estudante_curso TEXT,
+          estudante_semestre TEXT,
+          projeto_nome TEXT,
+          projeto_orientador TEXT,
+          total_horas REAL
+        );
+      `);
+      
+      db.run(`
+        CREATE TABLE IF NOT EXISTS atividades (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          relatorio_id TEXT,
+          data TEXT,
+          horas REAL,
+          descricao TEXT,
+          FOREIGN KEY(relatorio_id) REFERENCES relatorios(id) ON DELETE CASCADE
+        );
+      `);
+
+      // Populate database
+      auditHistory.forEach(record => {
+        db.run(`
+          INSERT INTO relatorios (id, timestamp, estudante_nome, estudante_curso, estudante_semestre, projeto_nome, projeto_orientador, total_horas)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          record.id,
+          record.timestamp,
+          record.student.name || "",
+          record.student.course || "",
+          record.student.semester || "",
+          record.project.name || "",
+          record.project.advisor || "",
+          parseFloat(record.totalHours) || 0
+        ]);
+
+        if (record.activities && record.activities.length > 0) {
+          record.activities.forEach(act => {
+            db.run(`
+              INSERT INTO atividades (relatorio_id, data, horas, descricao)
+              VALUES (?, ?, ?, ?)
+            `, [
+              record.id,
+              act.date || "",
+              parseFloat(act.hours) || 0,
+              act.description || ""
+            ]);
+          });
+        }
+      });
+
+      const binaryArray = db.export();
+      const blob = new Blob([binaryArray], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `auditoria_relatorios_unisenai_${Date.now()}.db`;
+      a.click();
+      
+      setTimeout(() => URL.revokeObjectURL(url), 200);
+    } catch (error) {
+      console.error("Erro no exportador SQLite:", error);
+      alert(`Falha ao compilar SQLite: ${error.message}. Baixando dump JSON como fallback.`);
+      auditElements.btnExportJson.click();
+    } finally {
+      auditElements.btnExportSqlite.disabled = false;
+      auditElements.btnExportSqlite.innerHTML = originalHTML;
+      lucide.createIcons();
+    }
+  });
+}
+
 // Tutorial toggle logic
 const setupTutorialToggle = () => {
   const toggle = document.getElementById('tutorial-toggle');
@@ -560,6 +903,8 @@ const setupTutorialToggle = () => {
 // Page Setup initialization
 window.addEventListener('DOMContentLoaded', () => {
   loadFromLocalStorage();
+  loadAuditHistory();
   setupTutorialToggle();
+  setupAuditPanel();
   lucide.createIcons();
 });

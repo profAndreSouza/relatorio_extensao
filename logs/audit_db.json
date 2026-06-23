@@ -1,0 +1,23 @@
+[
+  {
+    "id": "test_123",
+    "timestamp": "2026-06-23T12:46:41.467Z",
+    "student": {
+      "name": "Test Student",
+      "course": "ADS",
+      "semester": "3� Semestre"
+    },
+    "project": {
+      "name": "Test Project",
+      "advisor": "Test Advisor"
+    },
+    "totalHours": 12,
+    "activities": [
+      {
+        "date": "2026-06-20",
+        "hours": 4,
+        "description": "Test activity"
+      }
+    ]
+  }
+]
